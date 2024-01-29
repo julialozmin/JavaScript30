@@ -52,12 +52,20 @@
         <input type="text" name="item" placeholder="Item Name" required />
         <input type="submit" value="+ Add Item" />
       </form>
+      <div class="control-buttons">
+        <button class="check-all">Check All</button>
+        <button class="uncheck-all">Uncheck All</button>
+        <button class="clear-list">Clear List</button>
+      </div>
     </div>
 
     <script>
       const addItems = document.querySelector(".add-items");
       const itemsList = document.querySelector(".plates");
       const items = JSON.parse(localStorage.getItem("items")) || [];
+      const checkAll = document.querySelector(".check-all");
+      const uncheckAll = document.querySelector(".uncheck-all");
+      const clearList = document.querySelector(".clear-list");
 
       function addItem(e) {
         e.preventDefault();
@@ -78,12 +86,12 @@
         platesList.innerHTML = plates
           .map((plate, i) => {
             return `<li>
-              <input type="checkbox" data-index=${i} id="item${i}" ${
+                          <input type="checkbox" data-index=${i} id="item${i}" ${
               plate.done ? "checked" : ""
             } />
-              <label for="item${i}">${plate.text}</label>
-              
-              </li>`;
+                          <label for="item${i}">${plate.text}</label>
+
+                          </li>`;
           })
           .join("");
       }
@@ -97,8 +105,32 @@
         populateList(items, itemsList);
       }
 
+      function handleCheckAll() {
+        items.forEach((item) => {
+          item.done = true;
+        });
+        localStorage.setItem("items", JSON.stringify(items));
+        populateList(items, itemsList);
+      }
+
+      function handleUncheckAll() {
+        items.forEach((item) => {
+          item.done = false;
+        });
+        localStorage.setItem("items", JSON.stringify(items));
+        populateList(items, itemsList);
+      }
+
+      function handleClearList() {
+        localStorage.clear();
+        location.reload();
+      }
+
       addItems.addEventListener("submit", addItem);
       itemsList.addEventListener("click", toggleDone);
+      checkAll.addEventListener("click", handleCheckAll);
+      uncheckAll.addEventListener("click", handleUncheckAll);
+      clearList.addEventListener("click", handleClearList);
 
       populateList(items, itemsList);
     </script>
