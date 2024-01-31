@@ -24,6 +24,18 @@ function paintToCanvas() {
 
   return setInterval(() => {
     ctx.drawImage(video, 0, 0, width, height);
+
+    //we take the pixels from the image, we alterate them-apply the effect and we put them back for display, RGBA
+    let pixels = ctx.getImageData(0, 0, width, height);
+
+    // pixels = redEffect(pixels);
+    // pixels = rgbSplit(pixels);
+    pixels = greenScreen(pixels);
+
+    //to make a fusion-ghost effect, because we are keeping pixels for 10 frames
+    // ctx.globalAlpha = 0.7;
+
+    ctx.putImageData(pixels, 0, 0);
   }, 16);
 }
 
@@ -39,6 +51,53 @@ function takePhoto() {
   //to play the sound when taking the photo
   snap.currentTime = 0;
   snap.play();
+}
+
+function redEffect(pixels) {
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    pixels.data[i + 0] = pixels.data[i + 0] + 100; //for red
+    pixels.data[i + 1] = pixels.data[i + 1] - 100; //for Green
+    pixels.data[i + 0] = pixels.data[i + 0] * 0.5; //for blue
+  }
+  return pixels;
+}
+
+function rgbSplit(pixels) {
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    pixels.data[i - 250] = pixels.data[i + 0];
+    pixels.data[i + 500] = pixels.data[i + 1];
+    pixels.data[i - 650] = pixels.data[i + 2];
+  }
+  return pixels;
+}
+
+function greenScreen(pixels) {
+  const levels = {};
+
+  document.querySelectorAll(".rgb input").forEach((input) => {
+    levels[input.name] = input.value;
+  });
+
+  for (i = 0; i < pixels.data.length; i = i + 4) {
+    red = pixels.data[i + 0];
+    green = pixels.data[i + 1];
+    blue = pixels.data[i + 2];
+    alpha = pixels.data[i + 3];
+
+    if (
+      red >= levels.rmin &&
+      green >= levels.gmin &&
+      blue >= levels.bmin &&
+      red <= levels.rmax &&
+      green <= levels.gmax &&
+      blue <= levels.bmax
+    ) {
+      // take it out!
+      pixels.data[i + 3] = 0;
+    }
+  }
+
+  return pixels;
 }
 
 getVideo();
